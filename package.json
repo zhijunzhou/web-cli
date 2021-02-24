@@ -1,6 +1,6 @@
 {
   "name": "web-cli2",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "2050588049@qq.com",
   "bin": {
     "cli": "dist/index.js"
