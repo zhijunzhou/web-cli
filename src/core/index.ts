@@ -11,7 +11,7 @@ const defaultOptions = [
     type: 'rawlist',
     name: 'project',
     message: 'Please choose a project: ',
-    choices: mappings.map((item) => item.name)
+    choices: mappings.map((item: Project) => item.name)
   },
   {
     type: 'rawlist',
@@ -36,7 +36,7 @@ function parse(answer: Answer): ServerParams | undefined {
   const e = env.toLowerCase()
 
   if (project) {
-    const selected = <Project>mappings.find((item) => item.name === project)
+    const selected = <Project>mappings.find((item: Project) => item.name === project)
 
     if (selected) {
       const { env, local, exclude } = selected
