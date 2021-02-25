@@ -25,6 +25,72 @@ function exec(command: string, args: Array<string>, showLog?: Boolean) {
   })
 }
 
+function execRsyncDir(serverParams: ServerParams, showLog?: Boolean) {
+  return new Promise((resolve, reject) => {
+    const { server, username, path, local, exclude } = serverParams
+    const rcommand = Rsync.build({
+      source: local,
+      destination: `${username}@${server}:${path}`,
+      exclude: exclude,
+      flags: 'aurz',
+      shell: 'ssh'
+    })
+    // set progress
+    rcommand.set('progress')
+    rcommand.set('super')
+    rcommand.set('owner', 'nginx').set('group', 'nginx')
+
+    // Execute the command
+    rcommand.output(
+      (data: any) => {
+        // do things like parse progress
+        _log_yellow(data)
+      },
+      (error: any) => {
+        // do things like parse error output
+        _error(JSON.stringify(error))
+      }
+    )
+
+    rcommand.execute((error: Error, code: number, cmd: string) => {
+      if (error) {
+        reject(-1)
+        throw error
+      }
+      if (code === 0) {
+        showLog && _log_yellow(cmd)
+        resolve(code)
+      }
+    })
+  })
+}
+
+function execRsyncFile(serverParams: ServerParams, showLog?: Boolean) {
+  return new Promise((resolve, reject) => {
+    const { server, username, path, local } = serverParams
+    const rcommand = Rsync.build({
+      source: local,
+      destination: `${username}@${server}:${path}`,
+      include: ['index.html'],
+      exclude: ['static', 'images', 'img'],
+      flags: 'auz'
+    })
+    // set progress and list dir
+    rcommand.set('progress')
+
+    rcommand.execute((error: Error, code: number, cmd: string) => {
+      if (error) {
+        reject(-1)
+        throw error
+      }
+      if (code === 0) {
+        showLog && _log_yellow(cmd)
+        resolve(code)
+      }
+    })
+  })
+}
+
 export function checkNet(server: string, showLog?: Boolean) {
   return exec('ping', ['-c', '3', server], showLog)
 }
@@ -41,36 +107,12 @@ export function sysRsyncDir(serverParams: ServerParams, showLog?: Boolean) {
   )
 }
 
-export function rsyncDir(serverParams: ServerParams, showLog?: Boolean) {
-  const { server, username, path, local, exclude } = serverParams
-  const rcommand = Rsync.build({
-    source: local,
-    destination: `${username}@${server}:${path}`,
-    exclude: exclude,
-    flags: 'aurz'
-  })
-  // set progress and list dir
-  rcommand.set('progress').set('list-only')
+export async function rsyncDir(serverParams: ServerParams, showLog?: Boolean) {
+  const code = await execRsyncDir(serverParams, showLog)
 
-  // Execute the command
-  rcommand.output(
-    (data: any) => {
-      // do things like parse progress
-      _log_yellow(data)
-    },
-    (error: any) => {
-      // do things like parse error output
-      _error(JSON.stringify(error))
-    }
-  )
-  rcommand.execute((error: Error, code: number, cmd: string) => {
-    if (error) {
-      throw error
-    }
-    if (code === 0) {
-      showLog && _log_yellow(cmd)
-    }
-  })
+  if (code === 0) {
+    // await execRsyncFile(serverParams, showLog)
+  }
 }
 
 export function scpDir(serverParams: ServerParams, showLog?: Boolean) {

@@ -1,11 +1,12 @@
 {
   "name": "web-cli2",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "2050588049@qq.com",
   "bin": {
     "cli": "dist/index.js"
   },
   "license": "MIT",
+  "description": "A publishing tool can upload local assets to remote server!",
   "scripts": {
     "start": "npm run build && node dist/index.js",
     "clean": "rimraf dist && rimraf build",
